@@ -10,7 +10,7 @@ dependencies:
   cupertino_icons: ^0.1.0
 
   usage_stats:
-    path: C:/Projects/flutter/packages/usage_stats
+    path: ../packages/usage_stats
 
 dev_dependencies:
   flutter_test:
