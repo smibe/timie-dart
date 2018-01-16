@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:usage_stats/usage_stats.dart';
@@ -33,8 +34,10 @@ class TimieHomePage extends StatefulWidget {
 class TimieHomePageState extends State<TimieHomePage> {
   String usageToday = '0:00';
   String usageYesterday = '0:00';
+  List<UsageStatsData> usageStatsToday;
+  List<UsageStatsData> usageStatsYesterday;
 
-  Future<List<String>> getUsageStats(int dayOffset) async {
+  Future<List<UsageStatsData>> getUsageStats(int dayOffset) async {
     var now = new  DateTime.now();
     var start = new DateTime(now.year, now.month, now.day);
     if (dayOffset != 0) 
@@ -45,29 +48,31 @@ class TimieHomePageState extends State<TimieHomePage> {
   }
 
   Future updateUsageToday() async {
-    var timeToday = calcDuration(await getUsageStats(0));
+    var usageStatsToday = await getUsageStats(0);
+    
+    usageStatsToday?.sort((a, b) => b.duration.compareTo(a.duration));
+    var timeToday = calcDuration(usageStatsToday);
 
-    var timeYesterday = calcDuration(await getUsageStats(-1));
+    usageStatsYesterday = await getUsageStats(-1);
+    usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
+    var timeYesterday = calcDuration(usageStatsYesterday);
 
 
     setState(() {
       this.usageToday = formatTime(timeToday);
+      this.usageStatsToday = usageStatsToday;
+      this.usageStatsYesterday = usageStatsYesterday;
       this.usageYesterday = formatTime(timeYesterday);
     });
   }
 
-  int calcDuration(List<String> list)
+  int calcDuration(List<UsageStatsData> list)
   {
       num duration = 0;
       for (var s in list) {
-        var entry = s.split(";");
-        if (entry.length == 2)
-        {
-          var t = int.parse(entry[0]);
-          if (t > 1000 && !entry[1].endsWith("launcher")) {
-            duration += num.parse(entry[0]);
+          if (s.duration > 1000 && !s.packageName.endsWith("launcher")) {
+            duration += s.duration;
           }
-        }
       }
       return duration;
   }
@@ -80,27 +85,66 @@ class TimieHomePageState extends State<TimieHomePage> {
     return result.substring(0, result.indexOf('.'));
   }
 
+  List<Widget> usageStatsWidgets(List<UsageStatsData> list)
+  {
+    List<Widget> usageWidgets = new List<Widget>();
+    if (list == null) 
+      return usageWidgets;
+    
+    for (int i = 0; i < min (5, list.length); i++)
+    {
+        var u = list[i];
+        if (u.duration > 3000 && !u.packageName.endsWith("launcher"))
+        {
+          usageWidgets.add(new Text('${u.appName} : ${formatTime(u.duration)}', textScaleFactor: 0.8,));
+        }
+    }
+    return usageWidgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text(widget.title),
       ),
-      body: new Center(
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: 
+        new Padding (
+          padding:   new EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 20.0),
+          child: new Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            new Text(
-              'Zeit am Handy:',
+            new Text('Zeit am Handy:', textScaleFactor: 1.2,),
+            new Container(
+              color: Colors.grey[300],
+              padding: new EdgeInsets.all(3.0),
+              child: new Row(children: [
+                  new Text('Heute: '),
+                  new Text('$usageToday'),
+                ]),
             ),
-            new Text(
-              'Heute: $usageToday',
+            new Padding(padding: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 5.0),
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: usageStatsWidgets(usageStatsToday),
+              ),
             ),
-            new Text(
-              'Gestern: $usageYesterday',
+            new Container(
+              color: Colors.grey[300],
+              padding: new EdgeInsets.all(3.0),
+              child: new Row(children: [
+                  new Text('Gestern: '),
+                  new Text('$usageYesterday'),
+            ]),
             ),
-          ],
-        ),
+            new Padding(padding: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 5.0),
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: usageStatsWidgets(usageStatsYesterday),
+              ),
+            ),
+            ]),
       ),
       floatingActionButton: new FloatingActionButton(
         onPressed: updateUsageToday,

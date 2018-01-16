@@ -1,4 +1,4 @@
-package com.yourcompany.timie
+package com.smibe.timie
 
 import android.os.Bundle
 
