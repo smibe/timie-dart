@@ -47,7 +47,7 @@ class TimieHomePageState extends State<TimieHomePage> {
     if (end.millisecondsSinceEpoch > now.millisecondsSinceEpoch)
       end = now;
 
-    return await UsageStats.usageStats(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+    return await UsageStats.buildUsageStats(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
   }
 
   Future updateUsageToday() async {
