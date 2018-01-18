@@ -39,11 +39,14 @@ class TimieHomePageState extends State<TimieHomePage> {
 
   Future<List<UsageStatsData>> getUsageStats(int dayOffset) async {
     var now = new  DateTime.now();
-    var start = new DateTime(now.year, now.month, now.day);
+    var start = new DateTime(now.year, now.month, now.day, 0, 0, 1);
     if (dayOffset != 0) 
       start = start.add(new Duration(days: dayOffset));
 
-    var end = new DateTime(start.year, start.month, start.day + 1);
+    var end = new DateTime(start.year, start.month, start.day, 23, 59, 58);
+    if (end.millisecondsSinceEpoch > now.millisecondsSinceEpoch)
+      end = now;
+
     return await UsageStats.usageStats(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
   }
 
