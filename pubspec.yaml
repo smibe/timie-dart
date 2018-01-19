@@ -1,5 +1,5 @@
-name: timie
-description: A new Flutter project.
+name: Timie
+description: Control your mobile screen time
 
 dependencies:
   flutter:
@@ -10,7 +10,7 @@ dependencies:
   cupertino_icons: ^0.1.0
 
   usage_stats:
-    path: ../packages/usage_stats
+    path: git://github.com/smibe/usage_stats.git
 
 dev_dependencies:
   flutter_test:
