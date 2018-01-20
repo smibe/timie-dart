@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "665814871220",
+    "firebase_url": "https://timir-3545e.firebaseio.com",
+    "project_id": "timir-3545e",
+    "storage_bucket": "timir-3545e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:665814871220:android:84ec2c268e938e98",
+        "android_client_info": {
+          "package_name": "com.smibe.timie"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "665814871220-jbh5uctjdvt6nat4oj5n826ds4o7r6ge.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smibe.timie",
+            "certificate_hash": "0f84a794320622f966b99bd3ff754cf7e5ce2a9f"
+          }
+        },
+        {
+          "client_id": "665814871220-5jpsmrjglbef8bjqr7n7c00d59vaoe2n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEtnjUUtsk9uYKSbN5PboteS24zUgwMkI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "665814871220-5jpsmrjglbef8bjqr7n7c00d59vaoe2n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

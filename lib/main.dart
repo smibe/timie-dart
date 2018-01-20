@@ -1,13 +1,50 @@
 import 'dart:async';
-import 'dart:math';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:usage_stats/usage_stats.dart';
+import './TimieHomePage.dart' as TimieHomePage;
 
+final googleSignIn = new GoogleSignIn();
+final analytics = new FirebaseAnalytics();
+final auth = FirebaseAuth.instance;
 
-void main() => runApp(new TimieApp());
+Future<bool> silentLogIn() async {
+  GoogleSignInAccount user = googleSignIn.currentUser;
+  if (user == null)
+    user = await googleSignIn.signInSilently();
+  
+  if (user == null)
+    return false;
+  
+  await authenticate();
+  return true;
+}
 
-class TimieApp extends StatelessWidget {
+Future<Null> authenticate() async {
+    if (await auth.currentUser() == null) {
+    GoogleSignInAuthentication credentials =
+    await googleSignIn.currentUser.authentication;
+    await auth.signInWithGoogle(
+      idToken: credentials.idToken,
+      accessToken: credentials.accessToken,
+    );
+  }
+}
+
+var globalLoggedIn = false;
+void main() {
+  silentLogIn().then((u) {
+    globalLoggedIn = u;
+    runApp(new TimieApp());
+  });
+}
+
+class TimieApp extends StatelessWidget 
+{  
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -16,144 +53,55 @@ class TimieApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: new TimieHomePage(title: 'Timie'),
+      home: getHome(),
     );
   }
-}
 
-class TimieHomePage extends StatefulWidget {
-  TimieHomePage({Key key, this.title}) : super(key: key);
-
-
-  final String title;
-
-  @override
-    TimieHomePageState createState() => new TimieHomePageState();
-}
-
-class TimieHomePageState extends State<TimieHomePage> {
-  String usageToday = '0:00';
-  String usageYesterday = '0:00';
-  List<UsageStatsData> usageStatsToday;
-  List<UsageStatsData> usageStatsYesterday;
-
-  Future<List<UsageStatsData>> getUsageStats(int dayOffset) async {
-    var now = new  DateTime.now();
-    var start = new DateTime(now.year, now.month, now.day, 0, 0, 1);
-    if (dayOffset != 0) 
-      start = start.add(new Duration(days: dayOffset));
-
-    var end = new DateTime(start.year, start.month, start.day, 23, 59, 58);
-    if (end.millisecondsSinceEpoch > now.millisecondsSinceEpoch)
-      end = now;
-
-    return await UsageStats.buildUsageStats(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+  Widget getHome() {
+    //return new TimieHomePage.TimieHomePage(title: 'Timie');
+    return new Home();
   }
+}
 
-  Future updateUsageToday() async {
-    var usageStatsToday = await getUsageStats(0);
-    
-    usageStatsToday?.sort((a, b) => b.duration.compareTo(a.duration));
-    var timeToday = calcDuration(usageStatsToday);
+class HomeState extends State<Home> {
+  var loggedIn = globalLoggedIn;
 
-    usageStatsYesterday = await getUsageStats(-1);
-    usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
-    var timeYesterday = calcDuration(usageStatsYesterday);
+  Future<Null> logIn() async
+  {
+    GoogleSignInAccount user = googleSignIn.currentUser;
+    if (user != null)
+      return;
 
-
+    user = await googleSignIn.signIn();
+    analytics.logLogin();
+    await authenticate();
     setState(() {
-      this.usageToday = formatTime(timeToday);
-      this.usageStatsToday = usageStatsToday;
-      this.usageStatsYesterday = usageStatsYesterday;
-      this.usageYesterday = formatTime(timeYesterday);
+      this.loggedIn = user != null;
     });
-  }
-
-  int calcDuration(List<UsageStatsData> list)
-  {
-      num duration = 0;
-      for (var s in list) {
-          if (s.duration > 1000 && !s.packageName.endsWith("launcher")) {
-            duration += s.duration;
-          }
-      }
-      return duration;
-  }
-
-  String formatTime(int duration)
-  {
-    var d = new Duration(milliseconds: duration);
-    var result = d.toString();
-    
-    return result.substring(0, result.indexOf('.'));
-  }
-
-  List<Widget> usageStatsWidgets(List<UsageStatsData> list)
-  {
-    List<Widget> usageWidgets = new List<Widget>();
-    if (list == null) 
-      return usageWidgets;
-    
-    for (int i = 0; i < min (5, list.length); i++)
-    {
-        var u = list[i];
-        if (u.duration > 3000 && !u.packageName.endsWith("launcher"))
-        {
-          usageWidgets.add(new Text('${u.appName} : ${formatTime(u.duration)}', textScaleFactor: 0.8,));
-        }
-    }
-    return usageWidgets;
-  }
+ }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
-      ),
-      body: 
-        new Padding (
-          padding:   new EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 20.0),
-          child: new Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            new Text('Zeit am Handy:', textScaleFactor: 1.2,),
-            new Container(
-              color: Colors.grey[300],
-              padding: new EdgeInsets.all(3.0),
-              child: new Row(children: [
-                  new Text('Heute: '),
-                  new Text('$usageToday'),
-                ]),
-            ),
-            new Padding(padding: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 5.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: usageStatsWidgets(usageStatsToday),
-              ),
-            ),
-            new Container(
-              color: Colors.grey[300],
-              padding: new EdgeInsets.all(3.0),
-              child: new Row(children: [
-                  new Text('Gestern: '),
-                  new Text('$usageYesterday'),
-            ]),
-            ),
-            new Padding(padding: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 5.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: usageStatsWidgets(usageStatsYesterday),
-              ),
-            ),
-            ]),
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: updateUsageToday,
-        tooltip: 'Neu laden',
-        child: new Icon(Icons.refresh),
-      ),
-    );
+    if (this.loggedIn)
+      return new TimieHomePage.TimieHomePage(title: "Timie",);
+
+    return new Card(
+      child: new Padding(
+       padding:   new EdgeInsets.fromLTRB(10.0, 50.0, 10.0, 20.0),
+      child : new Column(
+      children: <Widget>[
+        new FlatButton(
+          child: new Text("Bitte anmelden"),
+           color: Colors.amber,
+           onPressed: logIn,
+          )
+      ],
+    )));
   }
+}
+
+class Home extends StatefulWidget
+{
+  @override
+  State<StatefulWidget> createState() => new HomeState();
 }
