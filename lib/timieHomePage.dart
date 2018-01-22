@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:usage_stats/usage_stats.dart';
+
+import 'usage.dart';
+
+final auth = FirebaseAuth.instance;
+final usage = new Usage();
 
 
 class TimieHomePage extends StatefulWidget {
@@ -15,35 +21,23 @@ class TimieHomePage extends StatefulWidget {
     TimieHomePageState createState() => new TimieHomePageState();
 }
 
+
+
 class TimieHomePageState extends State<TimieHomePage> {
   String usageToday = '0:00';
   String usageYesterday = '0:00';
   List<UsageStatsData> usageStatsToday;
   List<UsageStatsData> usageStatsYesterday;
 
-  Future<List<UsageStatsData>> getUsageStats(int dayOffset) async {
-    var now = new  DateTime.now();
-    var start = new DateTime(now.year, now.month, now.day, 0, 0, 1);
-    if (dayOffset != 0) 
-      start = start.add(new Duration(days: dayOffset));
-
-    var end = new DateTime(start.year, start.month, start.day, 23, 59, 58);
-    if (end.millisecondsSinceEpoch > now.millisecondsSinceEpoch)
-      end = now;
-
-    return await UsageStats.buildUsageStats(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
-  }
-
   Future updateUsageToday() async {
-    var usageStatsToday = await getUsageStats(0);
+    var usageStatsToday = await usage.getUsageStats(0);
     
     usageStatsToday?.sort((a, b) => b.duration.compareTo(a.duration));
     var timeToday = calcDuration(usageStatsToday);
 
-    usageStatsYesterday = await getUsageStats(-1);
+    usageStatsYesterday = await usage.getUsageStats(-1);
     usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
     var timeYesterday = calcDuration(usageStatsYesterday);
-
 
     setState(() {
       this.usageToday = formatTime(timeToday);
