@@ -30,14 +30,15 @@ class TimieHomePageState extends State<TimieHomePage> {
   List<UsageStatsData> usageStatsYesterday;
 
   Future updateUsageToday() async {
-    var usageStatsToday = await usage.getUsageStats(0);
+    var usageStatsToday = await Usage.getUsageStats(0);
     
     usageStatsToday?.sort((a, b) => b.duration.compareTo(a.duration));
-    var timeToday = calcDuration(usageStatsToday);
+    var timeToday = Usage.calcDuration(usageStatsToday);
 
-    usageStatsYesterday = await usage.getUsageStats(-1);
+    usageStatsYesterday = await Usage.getUsageStats(-1);
     usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
-    var timeYesterday = calcDuration(usageStatsYesterday);
+    var timeYesterday = Usage.calcDuration(usageStatsYesterday);
+    UsageStore.store(Usage.getStartOfDay(-1), timeYesterday, usageStatsYesterday);
 
     setState(() {
       this.usageToday = formatTime(timeToday);
@@ -45,17 +46,6 @@ class TimieHomePageState extends State<TimieHomePage> {
       this.usageStatsYesterday = usageStatsYesterday;
       this.usageYesterday = formatTime(timeYesterday);
     });
-  }
-
-  int calcDuration(List<UsageStatsData> list)
-  {
-      num duration = 0;
-      for (var s in list) {
-          if (s.duration > 1000 && !s.packageName.endsWith("launcher")) {
-            duration += s.duration;
-          }
-      }
-      return duration;
   }
 
   String formatTime(int duration)
