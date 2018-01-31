@@ -9,6 +9,7 @@ final auth = FirebaseAuth.instance;
 
 class UsageStore
 {
+  static DateTime lastWriteTime;
   static Future<Null>  store(DateTime day, int duration, List<UsageStatsData> list) async {
      var user = await auth.currentUser();
      final users = FirebaseDatabase.instance.reference().child("users");
@@ -17,12 +18,14 @@ class UsageStore
       var formatter = new DateFormat('yyyyMMdd');
       var date = formatter.format(day);
      var value = await usages.child(date).once();
-     if (value.value != null)
+     if (value.value != null) {
+        lastWriteTime = day;
         return;
-
+     }
+  
     dynamic map = {};
     if (list.length == 0) {
-      map["com.none.app"] = { 'duration': 0, 'appName': "none", 'packageName': "com.none.app"} ;
+      map["com_none_app"] = { 'duration': 0, 'appName': "none", 'packageName': "com.none.app"} ;
     } else {
       for (var usage in list)
       {
@@ -37,6 +40,7 @@ class UsageStore
       }     
     }
     usages.child(date).set({'duration' : duration, "appUsage" : map});
+    lastWriteTime = day;
   }
 }
 

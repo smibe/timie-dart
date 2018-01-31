@@ -4,8 +4,10 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:android_alarm_manager/android_alarm_manager.dart';
 
 import './TimieHomePage.dart' as TimieHomePage;
+import './usage.dart';
 
 final googleSignIn = new GoogleSignIn();
 final analytics = new FirebaseAnalytics();
@@ -34,12 +36,28 @@ Future<Null> authenticate() async {
   }
 }
 
+Future<Null> testAlarm() async {
+    if (UsageStore.lastWriteTime != null && UsageStore.lastWriteTime.millisecondsSinceEpoch >= Usage.getStartOfDay(-1).millisecondsSinceEpoch) {
+      print("Usage already stored.");
+      return;
+    }
+
+    var usageStatsYesterday = await Usage.getUsageStats(-1);
+    usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
+    var timeYesterday = Usage.calcDuration(usageStatsYesterday);
+    UsageStore.store(Usage.getStartOfDay(-1), timeYesterday, usageStatsYesterday);
+    print("Usage was successfully stored.");
+}
+
 var globalLoggedIn = false;
-void main() {
-  silentLogIn().then((u) {
-    globalLoggedIn = u;
-    runApp(new TimieApp());
-  });
+Future<Null>   main() async {
+    final int alarmID = 99;
+    silentLogIn().then((u) async {
+      globalLoggedIn = u;
+      runApp(new TimieApp());
+      var result = await AndroidAlarmManager.periodic(const Duration(minutes: 1), alarmID, testAlarm);
+      print ('$result');
+    });
 }
 
 class TimieApp extends StatelessWidget 

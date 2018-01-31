@@ -4,6 +4,7 @@ description: Control your mobile screen time
 dependencies:
   flutter:
     sdk: flutter
+  android_alarm_manager: 0.0.5
   google_sign_in: 0.3.1
   firebase_analytics: 0.0.4
   firebase_auth: 0.2.0
