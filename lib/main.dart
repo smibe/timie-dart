@@ -36,7 +36,7 @@ Future<Null> authenticate() async {
   }
 }
 
-Future<Null> testAlarm() async {
+Future<Null> saveUsage() async {
     if (UsageStore.lastWriteTime != null && UsageStore.lastWriteTime.millisecondsSinceEpoch >= Usage.getStartOfDay(-1).millisecondsSinceEpoch) {
       print("Usage already stored.");
       return;
@@ -55,7 +55,7 @@ Future<Null>   main() async {
     silentLogIn().then((u) async {
       globalLoggedIn = u;
       runApp(new TimieApp());
-      var result = await AndroidAlarmManager.periodic(const Duration(minutes: 1), alarmID, testAlarm);
+      var result = await AndroidAlarmManager.periodic(const Duration(minutes: 30), alarmID, saveUsage);
       print ('$result');
     });
 }
