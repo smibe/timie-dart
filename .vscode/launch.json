@@ -5,9 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Dart command line",
+            "type": "dart-cli",
+            "request": "launch",
+            "program": "${file}"
+        },
+        {
             "name": "Flutter mobile app",
             "request": "launch",
             "type": "flutter"
-        }
+        },
     ]
 }

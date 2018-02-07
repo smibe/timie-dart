@@ -5,16 +5,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:usage_stats/usage_stats_impl.dart';
 
-import './TimieHomePage.dart' as TimieHomePage;
-import './usage.dart';
+import 'TimieHomePage.dart' as TimieHomePage;
+import 'usage.dart' as Usage;
+import 'usageStore.dart';
+import 'DI.dart';
 
 final googleSignIn = new GoogleSignIn();
 final analytics = new FirebaseAnalytics();
 final auth = FirebaseAuth.instance;
+final usageStats = new UsageStats();
+final usage = new Usage.Usage(usageStats);
+
 
 Future<bool> silentLogIn() async {
-  GoogleSignInAccount user = googleSignIn.currentUser;
+ GoogleSignInAccount user = googleSignIn.currentUser;
   if (user == null)
     user = await googleSignIn.signInSilently();
   
@@ -37,15 +43,15 @@ Future<Null> authenticate() async {
 }
 
 Future<Null> saveUsage() async {
-    if (UsageStore.lastWriteTime != null && UsageStore.lastWriteTime.millisecondsSinceEpoch >= Usage.getStartOfDay(-1).millisecondsSinceEpoch) {
+    if (UsageStore.lastWriteTime != null && UsageStore.lastWriteTime.millisecondsSinceEpoch >= Usage.Usage.getStartOfDay(-1).millisecondsSinceEpoch) {
       print("Usage already stored.");
       return;
     }
 
-    var usageStatsYesterday = await Usage.getUsageStats(-1);
+    var usageStatsYesterday = await usage.getUsageStats(-1);
     usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
-    var timeYesterday = Usage.calcDuration(usageStatsYesterday);
-    UsageStore.store(Usage.getStartOfDay(-1), timeYesterday, usageStatsYesterday);
+    var timeYesterday = Usage.Usage.calcDuration(usageStatsYesterday);
+    UsageStore.store(Usage.Usage.getStartOfDay(-1), timeYesterday, usageStatsYesterday);
     print("Usage was successfully stored.");
 }
 
@@ -66,6 +72,7 @@ class TimieApp extends StatelessWidget
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    DI.setInstance<Usage.Usage>(usage);
     return new MaterialApp(
       title: 'Flutter Demo',
       theme: new ThemeData(
@@ -91,7 +98,7 @@ class HomeState extends State<Home> {
       return;
 
     user = await googleSignIn.signIn();
-    analytics.logLogin();
+    await analytics.logLogin();
     await authenticate();
     setState(() {
       this.loggedIn = user != null;

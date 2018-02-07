@@ -3,12 +3,14 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:usage_stats/usage_stats.dart';
+import 'package:usage_stats/usage_stats_data.dart';
 
 import 'usage.dart';
+import 'usageStore.dart';
+import 'DI.dart';
 
 final auth = FirebaseAuth.instance;
-final usage = new Usage();
+final usage = DI.resolve<Usage>();
 
 
 class TimieHomePage extends StatefulWidget {
@@ -30,12 +32,12 @@ class TimieHomePageState extends State<TimieHomePage> {
   List<UsageStatsData> usageStatsYesterday;
 
   Future updateUsageToday() async {
-    var usageStatsToday = await Usage.getUsageStats(0);
+    var usageStatsToday = await usage.getUsageStats(0);
     
     usageStatsToday?.sort((a, b) => b.duration.compareTo(a.duration));
     var timeToday = Usage.calcDuration(usageStatsToday);
 
-    usageStatsYesterday = await Usage.getUsageStats(-1);
+    usageStatsYesterday = await usage.getUsageStats(-1);
     usageStatsYesterday.sort((a, b) => b.duration.compareTo(a.duration));
     var timeYesterday = Usage.calcDuration(usageStatsYesterday);
     UsageStore.store(Usage.getStartOfDay(-1), timeYesterday, usageStatsYesterday);
