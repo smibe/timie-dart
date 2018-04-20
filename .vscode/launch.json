@@ -6,14 +6,14 @@
     "configurations": [
         {
             "name": "Dart command line",
-            "type": "dart-cli",
+            "type": "dart",
             "request": "launch",
             "program": "${file}"
         },
         {
             "name": "Flutter mobile app",
             "request": "launch",
-            "type": "flutter"
-        },
+            "type": "dart"
+        }
     ]
 }

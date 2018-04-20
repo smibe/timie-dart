@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "665814871220-er77g808c8dn96dckt2j3s7pgrn9c5qm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smibe.timie",
+            "certificate_hash": "b84ed072e3d560575667d1687e6ad8d214fe0dd5"
+          }
+        },
+        {
+          "client_id": "665814871220-ko9cj7fh5norjpftin23odtj9j0dggjj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smibe.timie",
+            "certificate_hash": "dbf298579f487e2bbc8db8d26e0d791bc3257816"
+          }
+        },
+        {
           "client_id": "665814871220-jbh5uctjdvt6nat4oj5n826ds4o7r6ge.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
