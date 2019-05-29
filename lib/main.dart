@@ -35,12 +35,13 @@ Future<bool> silentLogIn() async {
 
 Future<Null> authenticate() async {
   if (await auth.currentUser() == null) {
-    GoogleSignInAuthentication credentials =
-        await googleSignIn.currentUser.authentication;
-    await auth.signInWithGoogle(
-      idToken: credentials.idToken,
-      accessToken: credentials.accessToken,
-    );
+    final GoogleSignInAccount googleUser = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );    
+    await auth.signInWithCredential(credential);
   }
 }
 
